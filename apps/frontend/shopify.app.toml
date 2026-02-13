@@ -1,0 +1,21 @@
+# This is the configuration file for the Shopify CLI.
+# It is used to link your local development app to a Shopify app.
+
+name = "AI Post-Purchase Revenue Optimizer"
+client_id = "e8b75c5a4d6989be7ad0c197eafe0645"
+application_url = "https://example.com"
+embedded = true
+
+[access_scopes]
+scopes = "read_orders,read_products,write_products"
+
+[auth]
+redirect_urls = [
+  "https://example.com/shopify/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-01"
+
+[pos]
+embedded = false
