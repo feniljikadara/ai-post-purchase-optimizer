@@ -2,17 +2,24 @@ import { Module } from '@nestjs/common';
 import { ShopifyController } from './shopify.controller';
 import { ShopifyAuthService } from './shopify-auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { shopifyApi } from '@shopify/shopify-api';
-import Shopify, { ApiVersion, LogSeverity } from '@shopify/shopify-api';
+import { shopifyApi, ApiVersion, LogSeverity, Shopify } from '@shopify/shopify-api';
 
 const ShopifyApiProvider = {
   provide: 'SHOPIFY_API',
-  useFactory: (configService: ConfigService) => {
+  useFactory: (configService: ConfigService): Shopify => {
+    const apiKey = configService.get<string>('SHOPIFY_API_KEY');
+    const apiSecretKey = configService.get<string>('SHOPIFY_API_SECRET');
+    const host = configService.get<string>('HOST');
+
+    if (!apiKey || !apiSecretKey || !host) {
+      throw new Error('Missing Shopify API credentials or HOST in .env file');
+    }
+
     const shopify = shopifyApi({
-      apiKey: configService.get<string>('SHOPIFY_API_KEY'),
-      apiSecretKey: configService.get<string>('SHOPIFY_API_SECRET'),
+      apiKey,
+      apiSecretKey,
       scopes: ['read_products', 'write_products', 'read_orders'],
-      hostName: configService.get<string>('HOST').replace(/https?:\/\//, ''),
+      hostName: host.replace(/https?:\/\//, ''),
       apiVersion: ApiVersion.October23,
       isEmbeddedApp: true,
       logger: {
@@ -30,3 +37,5 @@ const ShopifyApiProvider = {
   providers: [ShopifyAuthService, ShopifyApiProvider],
 })
 export class ShopifyModule {}
+
+

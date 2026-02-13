@@ -1,25 +1,25 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { Response } from 'express';
-import Shopify from '@shopify/shopify-api';
+import { Injectable, Inject, Req, Res } from '@nestjs/common';
+import type { Request, Response } from 'express';
+import type { Shopify } from '@shopify/shopify-api';
 
 @Injectable()
 export class ShopifyAuthService {
-  constructor(@Inject('SHOPIFY_API') private readonly shopify: typeof Shopify) {}
+  constructor(@Inject('SHOPIFY_API') private readonly shopify: Shopify) {}
 
-  async beginAuth(shop: string, res: Response): Promise<string> {
+  async beginAuth(shop: string, req: Request, res: Response): Promise<string> {
     return await this.shopify.auth.begin({
       shop: shop,
       callbackPath: '/shopify/auth/callback',
-      isOnline: false, // Using offline tokens for background access
+      isOnline: false,
+      rawRequest: req,
       rawResponse: res,
     });
   }
 
-  async handleCallback(query: any): Promise<void> {
+  async handleCallback(req: Request, res: Response): Promise<void> {
     await this.shopify.auth.callback({
-      rawRequest: { url: `/?${new URLSearchParams(query).toString()}` } as any,
-      rawResponse: null,
-      query,
+      rawRequest: req,
+      rawResponse: res,
     });
   }
 }
